@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>岛主别跑：最后72小时 (单文件版)</title>
+    
+    <!-- 1. 引入样式库 Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      // Tailwind 配置
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'neo-bg': '#E5E5E5',
+              'neo-yellow': '#FFD700',
+              'neo-action': '#FF4500', 
+              'neo-safe': '#00CED1',   
+              'neo-special': '#9370DB', 
+              'neo-warn': '#FF00FF',    
+              'neo-black': '#1A1A1A',
+              'sky-day': '#87CEEB',
+              'sky-dusk': '#FF7F50',
+              'sky-night': '#0a0a2a'
+            },
+            fontFamily: {
+              mono: ['"Courier New"', 'Courier', 'monospace'],
+              sans: ['"Microsoft YaHei"', '"SimHei"', '"Impact"', 'Arial', 'sans-serif']
+            },
+            boxShadow: {
+              'hard': '6px 6px 0px 0px #1A1A1A',
+              'hard-sm': '3px 3px 0px 0px #1A1A1A',
+              'hard-hover': '2px 2px 0px 0px #1A1A1A',
+              'inner-hard': 'inset 4px 4px 0px 0px rgba(0,0,0,0.1)'
+            },
+            animation: {
+              'scan': 'scan 4s linear infinite',
+              'glitch': 'glitch 2s linear infinite',
+              'pop-in': 'popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
+              'slide-up': 'slideUp 0.5s ease-out forwards',
+              'bob': 'bob 0.8s infinite alternate',
+              'float': 'float 3s ease-in-out infinite',
+              'walk': 'walk 0.6s infinite linear',
+              'run': 'run 0.3s infinite linear', 
+              'arm-swing': 'armSwing 0.6s infinite ease-in-out alternate',
+              'run-arm': 'armSwing 0.3s infinite ease-in-out alternate',
+              'scroll-bg': 'scrollBg 10s linear infinite',
+              'scroll-bg-fast': 'scrollBg 2s linear infinite',
+              'pass-by': 'passBy 1s linear infinite',
+              'speed-line': 'speedLine 0.5s linear infinite',
+              'dust': 'dust 0.4s ease-out infinite',
+              'bounce-slow': 'bounce 2s infinite'
+            },
+            keyframes: {
+              scan: { '0%': { backgroundPosition: '0% 0%' }, '100%': { backgroundPosition: '0% 100%' } },
+              glitch: {
+                '2%, 64%': { transform: 'translate(2px,0) skew(0deg)' },
+                '4%, 60%': { transform: 'translate(-2px,0) skew(0deg)' },
+                '62%': { transform: 'translate(0,0) skew(5deg)' }
+              },
+              popIn: {
+                '0%': { opacity: '0', transform: 'scale(0.9) translateY(10px)' },
+                '100%': { opacity: '1', transform: 'scale(1) translateY(0)' }
+              },
+              slideUp: {
+                '0%': { opacity: '0', transform: 'translateY(20px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' }
+              },
+              bob: { '0%': { transform: 'translateY(0)' }, '100%': { transform: 'translateY(-5px)' } },
+              float: { '0%, 100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-10px)' } },
+              walk: {
+                '0%': { transform: 'rotate(-5deg)' },
+                '50%': { transform: 'rotate(5deg)' },
+                '100%': { transform: 'rotate(-5deg)' }
+              },
+              run: {
+                 '0%': { transform: 'translateY(0) rotate(-5deg)' },
+                 '50%': { transform: 'translateY(-5px) rotate(10deg)' },
+                 '100%': { transform: 'translateY(0) rotate(-5deg)' }
+              },
+              armSwing: { '0%': { transform: 'rotate(45deg)' }, '100%': { transform: 'rotate(-45deg)' } },
+              scrollBg: { '0%': { backgroundPosition: '0 0' }, '100%': { backgroundPosition: '-100px 0' } },
+              passBy: { '0%': { transform: 'translateX(100vw)' }, '100%': { transform: 'translateX(-100%)' } },
+              speedLine: {
+                '0%': { transform: 'translateX(100%) scaleX(0.5)', opacity: '0' },
+                '50%': { opacity: '1' },
+                '100%': { transform: 'translateX(-200%) scaleX(1.5)', opacity: '0' }
+              },
+              dust: {
+                '0%': { transform: 'scale(0.5) translateY(0)', opacity: '0.8' },
+                '100%': { transform: 'scale(1.5) translateY(-10px)', opacity: '0' }
+              }
+            }
+          }
+        }
+      }
+    </script>
+
+    <!-- 2. 引入 React 和核心库 -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- 3. 引入 Recharts 图表库 -->
+    <script src="https://unpkg.com/recharts/umd/Recharts.min.js"></script>
+
+    <!-- 4. 引入 Lucide 图标库 -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide-react@latest/dist/umd/lucide-react.js"></script>
+
+    <!-- 5. 引入 Babel (用于在线编译 JSX) -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+      body {
+        background-color: #E5E5E5;
+        background-image: radial-gradient(#999 1px, transparent 1px);
+        background-size: 24px 24px;
+        overflow: hidden;
+        touch-action: manipulation;
+        font-family: "Microsoft YaHei", sans-serif;
+      }
+      .vignette-risk {
+        pointer-events: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: 10;
+        box-shadow: inset 0 0 100px rgba(255, 0, 0, 0);
+        transition: box-shadow 0.5s ease;
+        mix-blend-mode: multiply;
+      }
+      .bg-grid {
+        background-size: 40px 40px;
+        background-image: linear-gradient(to right, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+                          linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+      }
+      .bg-stripes {
+        background-image: repeating-linear-gradient(
+          45deg,
+          rgba(0,0,0,0.05),
+          rgba(0,0,0,0.05) 10px,
+          transparent 10px,
+          transparent 20px
+        );
+      }
+      .typewriter-cursor::after {
+        content: '|';
+        animation: blink 1s step-start infinite;
+      }
+      @keyframes blink { 50% { opacity: 0; } }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "recharts": "https://esm.sh/recharts@^3.6.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <div id="root"></div>
+
+    <!-- 6. 游戏核心代码 (合并了 Types, Data, Components, App) -->
+    <script type="text/babel">
+      const { useState, useEffect } = React;
+      
+      // 获取库引用
+      const { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } = window.Recharts;
+      const { 
+        Smartphone, Ghost, Zap, Skull, Camera, Pizza, Building2, Eye, Dog, RadioTower, 
+        Siren, MessageCircleWarning, Cloud, Moon, Sun, ArrowRight, Play, Settings, 
+        Clock, DollarSign, Brain, RefreshCw, TrendingUp, MapPin, Volume2, VolumeX, 
+        LogOut, X, Shield, Star, Users, Heart, ArrowLeft, MessageCircle 
+      } = window.LucideReact;
+
+      // --- TYPES (转为 JS 对象) ---
+      const GamePhase = {
+        START: 'START',
+        TALENT_SELECT: 'TALENT_SELECT',
+        GAME_LOOP: 'GAME_LOOP',
+        GAME_OVER: 'GAME_OVER',
+        TALENT_INDEX: 'TALENT_INDEX',
+      };
+
+      const TalentType = {
+        SURVIVAL: 'SURVIVAL',
+        RESOURCE: 'RESOURCE',
+        SOCIAL: 'SOCIAL',
+        TIME: 'TIME',
+        SKILL: 'SKILL',
+        SPECIAL: 'SPECIAL',
+      };
+
+      // --- DATA ---
+      const TALENTS = [
+        { id: 'T01', name: '铁胃', type: TalentType.SURVIVAL, rarity: 'RARE', description: '吃垃圾食品恢复体力，且理智+10。' },
+        { id: 'T02', name: '富二代', type: TalentType.RESOURCE, rarity: 'LEGENDARY', description: '初始资金翻倍 (¥200w)，但基础曝光度 +15%。' },
+        { id: 'T03', name: '网红脸', type: TalentType.SOCIAL, rarity: 'COMMON', description: '直播类事件收益翻倍，但曝光度增加幅度也翻倍。' },
+        { id: 'T04', name: '跑路专家', type: TalentType.TIME, rarity: 'RARE', description: '初始时间减少 12 小时 (只需活 60h)。' },
+        { id: 'T05', name: '老实人', type: TalentType.SOCIAL, rarity: 'COMMON', description: '容易被骗(损失+50%)，但通过盘问概率提升。' },
+        { id: 'T06', name: '黑客帝国', type: TalentType.SKILL, rarity: 'LEGENDARY', description: '解锁所有“电子/网络”事件的隐藏选项（通常是0成本）。' },
+        { id: 'T07', name: '时间管理', type: TalentType.TIME, rarity: 'RARE', description: '所有消耗时间的事件，时间消耗减少 0.5h。' },
+        { id: 'T09', name: '被迫害妄想', type: TalentType.SKILL, rarity: 'COMMON', description: '基础曝光度+20%，但能看见选项的成功率/风险值。' },
+        { id: 'T11', name: '健身狂', type: TalentType.SURVIVAL, rarity: 'COMMON', description: '体力活（逃跑、打架）成功率 100%，不扣理智。' },
+        { id: 'T13', name: '极简主义', type: TalentType.RESOURCE, rarity: 'COMMON', description: '金钱消耗减少 20%，但理智上限降低 20。' },
+        { id: 'T15', name: '外星混血', type: TalentType.SPECIAL, rarity: 'LEGENDARY', description: '遇到UFO直接通关（极低概率事件）。' },
+      ];
+
+      const EVENTS = [
+        {
+          id: 'E01',
+          title: '我是秦始皇',
+          description: '手机收到短信：“朕是嬴政，需路费解冻资产，事成封你为兵马俑大将军。”',
+          tags: ['PHONE', 'SCAM', 'DIGITAL'],
+          choices: [
+            {
+              text: '痛骂骗子',
+              type: 'AGGRESSIVE',
+              effect: (s) => ({ risk: s.risk + 5, sanity: Math.min(100, s.sanity + 10), time: s.time - 0.5 }),
+              resultText: '你对着电话骂了半小时。心情舒畅，但路人把你当成了精神病，报了警。',
+            },
+            {
+              text: '打钱 ($5w)',
+              type: 'NORMAL',
+              moneyReq: 50000,
+              effect: (s) => ({ money: s.money - 50000, sanity: s.sanity - 20, time: s.time - 0.5 }),
+              resultText: '你真的打钱了？你这智商是怎么当上岛主的？骗子都感动得把你拉黑了。',
+            },
+            {
+              text: '[黑客] 顺藤摸瓜',
+              type: 'TALENT',
+              talentReq: 'T06',
+              effect: (s) => ({ risk: Math.max(0, s.risk - 10), money: s.money + 50000, time: s.time - 1 }),
+              resultText: '你黑进了骗子的账户，不仅转走了他的全部积蓄，还帮他预约了自首。',
+            }
+          ]
+        },
+        {
+          id: 'E02',
+          title: '全城通缉',
+          description: '商场大屏幕上正在播放你的通缉令。照片是你身份证上最丑的那张。',
+          tags: ['CITY', 'CAMERA', 'DANGER'],
+          choices: [
+            {
+              text: '整容 ($20w)',
+              type: 'NORMAL',
+              moneyReq: 200000,
+              effect: (s) => ({ money: s.money - 200000, risk: Math.max(0, s.risk - 30), sanity: s.sanity - 10, time: s.time - 4 }),
+              resultText: '你找了个地下诊所。现在你看起来像个充气过度的气球，但至少不像通缉犯了。',
+            },
+            {
+              text: '戴口罩硬闯',
+              type: 'AGGRESSIVE',
+              effect: (s) => {
+                  const caught = s.risk > 60;
+                  return caught 
+                      ? { risk: s.risk + 20, sanity: s.sanity - 20, time: s.time - 2 }
+                      : { risk: s.risk + 5, time: s.time - 1 };
+              },
+              resultText: '你低着头走过。有人多看了你两眼，你的心跳快得像擂鼓。',
+            },
+            {
+              text: '[妄想] 走下水道',
+              type: 'TALENT',
+              talentReq: 'T09',
+              effect: (s) => ({ risk: Math.max(0, s.risk - 10), sanity: s.sanity - 15, time: s.time - 3 }),
+              resultText: '早就规划好了路线！除了味道有点大，这里是全城最安全的地方。',
+            }
+          ]
+        },
+        {
+          id: 'E03',
+          title: '机械恶犬',
+          description: '一条流着机油的机械改造斗牛犬挡住了巷口，它的电子眼红光闪烁，似乎识别出了你的生物特征。',
+          tags: ['ANIMAL', 'DANGER', 'MECH'],
+          choices: [
+            {
+              text: '滑铲攻击',
+              type: 'AGGRESSIVE',
+              effect: (s) => ({ risk: s.risk + 10, sanity: s.sanity - 20, time: s.time - 1 }),
+              resultText: '你试图滑铲，但它可是钛合金做的！你的腿骨折了，它还嘲讽地叫了两声。',
+            },
+            {
+              text: '扔肉包子 ($2w)',
+              type: 'NORMAL',
+              moneyReq: 20000,
+              effect: (s) => ({ money: s.money - 20000, time: s.time - 0.5 }),
+              resultText: '它嗅了嗅，居然吃了！这年头连机械狗都无法拒绝碳水化合物。',
+            },
+            {
+              text: '[健身] 跑酷翻墙',
+              type: 'TALENT',
+              talentReq: 'T11',
+              effect: (s) => ({ time: s.time - 0.5, sanity: Math.min(100, s.sanity + 10) }),
+              resultText: '你踩着空调外机三段跳上墙。机械狗在下面气得处理器过热短路了。',
+            }
+          ]
+        },
+        {
+          id: 'E04',
+          title: '黑市医生',
+          description: '这里充满福尔马林和发霉的味道。“只要钱到位，心脏都能给你换个泵。”',
+          tags: ['MYSTERY', 'HUMAN', 'SCAM'],
+          choices: [
+            {
+              text: '治疗理智 ($15w)',
+              type: 'SAFE',
+              moneyReq: 150000,
+              effect: (s) => ({ money: s.money - 150000, sanity: 100, time: s.time - 3 }),
+              resultText: '他给你打了一针不明蓝色液体。你觉得自己能看见声音，理智恢复了！',
+            },
+            {
+              text: '整容减曝光 ($10w)',
+              type: 'NORMAL',
+              moneyReq: 100000,
+              effect: (s) => ({ money: s.money - 100000, risk: Math.max(0, s.risk - 20), time: s.time - 3 }),
+              resultText: '手术很粗糙，现在你有一张永远在“假笑”的脸。',
+            },
+            {
+              text: '不看了，快跑',
+              type: 'AGGRESSIVE',
+              effect: (s) => ({ risk: s.risk + 5, time: s.time - 0.5 }),
+              resultText: '医生看你的眼神像是在看器官捐献者。你明智地溜了。',
+            }
+          ]
+        },
+        {
+          id: 'E05',
+          title: '古神低语',
+          description: '下水道深处传来不可名状的咕噜声。你的理智正在狂掉，感觉有什么东西在盯着你的后脑勺。',
+          tags: ['MYSTERY', 'DARK', 'WATER'],
+          choices: [
+            {
+              text: '试图理解',
+              type: 'NORMAL',
+              effect: (s) => ({ sanity: s.sanity - 50, risk: Math.max(0, s.risk - 10), time: s.time - 1 }),
+              resultText: '你理解了宇宙的终极真理——就是虚无。你的脑子差点炸开。',
+            },
+            {
+              text: '交保护费 ($5w)',
+              type: 'SAFE',
+              moneyReq: 50000,
+              effect: (s) => ({ money: s.money - 50000, sanity: Math.min(100, s.sanity + 20), time: s.time - 0.5 }),
+              resultText: '你把钱扔进水里。咕噜声停止了。古神也是要恰饭的。',
+            },
+            {
+              text: '加入他们',
+              type: 'AGGRESSIVE',
+              effect: (s) => ({ sanity: 0, time: s.time - 99 }), 
+              resultText: '你跳进了污水中……你成为了传说的一部分。（理智归零）',
+            }
+          ]
+        },
+        {
+          id: 'E06',
+          title: '空气币推销员',
+          description: '“大哥！马斯克都喊单的‘香蕉币’！稳赚不赔，梭哈改变人生！”',
+          tags: ['CITY', 'DIGITAL', 'FOOD'],
+          choices: [
+            {
+              text: '梭哈 ($50w)',
+              type: 'AGGRESSIVE',
+              moneyReq: 500000,
+              effect: (s) => {
+                 const win = Math.random() > 0.6; 
+                 const amount = win ? 3000000 : -500000;
+                 return { money: s.money + amount, sanity: s.sanity - 10, time: s.time - 1 };
+              },
+              resultText: '心跳加速！你看不到K线图，只知道你的钱……好像变戏法一样消失/翻倍了？',
+            },
+            {
+              text: '骂他传销',
+              type: 'SAFE',
+              effect: (s) => ({ risk: s.risk + 5, time: s.time - 1 }),
+              resultText: '你骂了他一顿。周围的人都看着你，觉得你俩都是疯子。',
+            },
+            {
+              text: '[富二代] 内部消息',
+              type: 'TALENT',
+              talentReq: 'T02',
+              effect: (s) => ({ money: s.money + 500000, time: s.time - 1 }),
+              resultText: '你给几个金融圈的朋友打了电话，做空了这个垃圾币，小赚一笔。',
+            }
+          ]
+        },
+        {
+          id: 'E07',
+          title: '昔日兄弟',
+          description: '你遇到了以前的生意伙伴老王。他正盯着你的名表，眼神闪烁。',
+          tags: ['HUMAN', 'CITY', 'SCAM'],
+          choices: [
+            {
+              text: '借点钱 ($20w)',
+              type: 'NORMAL',
+              effect: (s) => {
+                  const betray = Math.random() > 0.4;
+                  return betray 
+                      ? { risk: s.risk + 30, money: s.money + 10000, time: s.time - 1 }
+                      : { money: s.money + 200000, time: s.time - 1 };
+              },
+              resultText: '人心隔肚皮。他可能给了你钱，也可能转头就报了警拿赏金。',
+            },
+            {
+              text: '封口费 ($10w)',
+              type: 'SAFE',
+              moneyReq: 100000,
+              effect: (s) => ({ money: s.money - 100000, risk: Math.max(0, s.risk - 10), time: s.time - 0.5 }),
+              resultText: '你塞给他一叠钱。他笑嘻嘻地走了，“放心，我什么都没看见。”',
+            }
+          ]
+        },
+        {
+          id: 'E08',
+          title: '路边大排档',
+          description: '逃亡太久饿得头晕眼花。前面的烧烤摊飘来诱人的孜然味，但也坐着两个穿制服的巡警。',
+          tags: ['FOOD', 'CITY', 'DANGER'],
+          choices: [
+            {
+              text: '饿死胆大的',
+              type: 'AGGRESSIVE',
+              effect: (s) => {
+                  const caught = s.risk > 40;
+                  return caught
+                      ? { risk: s.risk + 20, sanity: s.sanity + 10, time: s.time - 2 }
+                      : { sanity: s.sanity + 20, time: s.time - 1 };
+              },
+              resultText: '你坐在警察背面吃完了炒饭。最危险的地方就是最安全的地方？才怪，你吓得胃疼。',
+            },
+            {
+              text: '[铁胃] 翻垃圾桶',
+              type: 'TALENT',
+              talentReq: 'T01',
+              effect: (s) => ({ sanity: s.sanity + 10, time: s.time - 0.5 }),
+              resultText: '你在后巷找到了半个汉堡。虽然有点馊，但这就是自由的味道！',
+            },
+            {
+              text: '忍饥挨饿',
+              type: 'SAFE',
+              effect: (s) => ({ sanity: s.sanity - 15, time: s.time - 1 }),
+              resultText: '你咽了口口水，悄悄溜走了。肚子叫得像打雷。',
+            }
+          ]
+        }
+      ];
+
+      const ENDINGS = [
+        {
+          id: 'E07',
+          title: '疯人院之王',
+          description: '理智崩坏。你坐在路边对着空气发表演讲，声称自己是宇宙大统领。警察甚至没给你戴手铐，只是温柔地给你披上了毛毯，送你去了该去的地方。',
+          condition: (s) => s.sanity <= 0
+        },
+        {
+          id: 'E03',
+          title: '法网恢恢',
+          description: '曝光度爆表！全城的摄像头都锁定了你。SWAT小队从天而降，你甚至来不及吃完手里的烤冷面。',
+          condition: (s) => s.risk >= 100
+        },
+        {
+          id: 'E05',
+          title: '街头艺人',
+          description: '彻底破产。昔日的岛主，如今在地铁口拉二胡抵债。路人纷纷投来同情的硬币，你居然觉得比当老板轻松。',
+          condition: (s) => s.money < 0
+        },
+        {
+          id: 'E01',
+          title: '潜艇大亨',
+          description: '一位神秘富豪乘坐黄金潜艇消失在公海。传说诞生了，你是最后的赢家。',
+          condition: (s) => s.time <= 0 && s.money > 2000000 && s.risk < 80
+        },
+        {
+          id: 'E02',
+          title: '都市传说',
+          description: '根本没人见过他。他是幽灵吗？警方翻遍了全岛，连一根头发都没找到。',
+          condition: (s) => s.time <= 0 && s.risk < 20
+        },
+        {
+          id: 'E08',
+          title: '模范市民',
+          description: '你在警察眼皮子底下买菜、遛弯，最后大摇大摆地走了。这才是最高级的潜行。',
+          condition: (s) => s.time <= 0 && s.risk >= 80
+        },
+        {
+          id: 'E00',
+          title: '成功逃脱',
+          description: '你熬过了最后的72小时。自由的空气真甜美，虽然身无分文，但至少还活着。',
+          condition: (s) => s.time <= 0
+        }
+      ];
+
+      // --- COMPONENTS ---
+
+      const Button = ({ children, variant = 'primary', icon: Icon, fullWidth, className, ...props }) => {
+        const baseStyle = "relative font-sans font-bold text-lg border-4 border-black transition-all active:translate-x-[4px] active:translate-y-[4px] active:shadow-none disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-500 overflow-hidden group";
+        
+        const variants = {
+          primary: "bg-neo-yellow text-neo-black shadow-hard hover:shadow-hard-hover",
+          secondary: "bg-neo-safe text-neo-black shadow-hard hover:shadow-hard-hover",
+          danger: "bg-neo-action text-white shadow-hard hover:shadow-hard-hover",
+          special: "bg-neo-special text-white shadow-hard hover:shadow-hard-hover",
+        };
+
+        return (
+          <button 
+            className={`${baseStyle} ${variants[variant]} ${fullWidth ? 'w-full' : ''} px-6 py-4 flex items-center justify-center gap-3 ${className || ''}`}
+            {...props}
+          >
+            <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity pointer-events-none"></div>
+            {Icon && <Icon size={24} strokeWidth={3} className="shrink-0" />}
+            <span className="z-10">{children}</span>
+          </button>
+        );
+      };
+
+      const IconButton = ({ icon: Icon, variant = 'primary', size = 20, className, ...props }) => {
+        const baseStyle = "relative border-2 border-black p-2 transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none shadow-hard-sm hover:shadow-hard-hover flex items-center justify-center";
+         const variants = {
+          primary: "bg-white text-black",
+          secondary: "bg-neo-black text-white",
+        };
+        
+        return (
+          <button className={`${baseStyle} ${variants[variant]} ${className || ''}`} {...props}>
+            <Icon size={size} strokeWidth={3} />
+          </button>
+        );
+      }
+
+      const Card = ({ children, className, title }) => {
+        return (
+          <div className={`relative bg-white border-4 border-black p-6 shadow-hard ${className || ''}`}>
+            {title && (
+              <div className="absolute -top-5 -left-1 bg-black text-white px-3 py-1 font-bold text-sm transform -rotate-2 border-2 border-white shadow-sm z-10">
+                {title}
+              </div>
+            )}
+            {children}
+          </div>
+        );
+      };
+
+      const GlitchText = ({ text, size = 'md', color = 'text-black' }) => {
+        const sizes = {
+          sm: 'text-xl',
+          md: 'text-3xl',
+          lg: 'text-5xl',
+          xl: 'text-7xl',
+        };
+
+        return (
+          <div className={`relative inline-block font-sans font-black ${sizes[size]} ${color}`}>
+            <span className="relative z-10">{text}</span>
+            <span className="absolute top-0 left-0 -z-10 w-full h-full text-neo-action opacity-70 animate-glitch" style={{ clipPath: 'inset(20% 0 80% 0)' }}>{text}</span>
+            <span className="absolute top-0 left-0 -z-10 w-full h-full text-neo-safe opacity-70 animate-glitch" style={{ animationDirection: 'reverse', clipPath: 'inset(60% 0 10% 0)' }}>{text}</span>
+          </div>
+        );
+      };
+
+      const TypewriterText = ({ text }) => {
+        const [displayedText, setDisplayedText] = useState('');
+
+        useEffect(() => {
+          let index = 0;
+          setDisplayedText('');
+          const timer = setInterval(() => {
+            if (index < text.length) {
+              setDisplayedText((prev) => prev + text.charAt(index));
+              index++;
+            } else {
+              clearInterval(timer);
+            }
+          }, 20); // Faster speed
+          return () => clearInterval(timer);
+        }, [text]);
+
+        return <p className="font-sans font-bold text-lg leading-relaxed text-gray-900">{displayedText}<span className="animate-pulse">|</span></p>;
+      };
+
+      const BossCharacter = ({ isRunning }) => {
+        return (
+          <div className={`relative w-24 h-32 ${isRunning ? 'animate-run' : 'animate-bob'}`}>
+             {/* Dust Particles */}
+             {isRunning && (
+                 <>
+                  <div className="absolute bottom-0 -left-6 w-5 h-5 bg-gray-300/50 rounded-full animate-dust"></div>
+                  <div className="absolute bottom-1 -left-10 w-8 h-8 bg-gray-200/50 rounded-full animate-dust" style={{ animationDelay: '0.1s' }}></div>
+                 </>
+             )}
+
+             {/* SHADOW */}
+             <div className="absolute bottom-0 left-2 w-20 h-4 bg-black/40 rounded-full blur-sm scale-x-110"></div>
+
+             {/* LEFT ARM (Behind Body) */}
+             <div className={`absolute top-14 -left-3 w-5 h-12 bg-[#006400] border-3 border-black rounded-full origin-top z-0 ${isRunning ? 'animate-run-arm' : 'rotate-12'}`} style={{ animationDirection: 'reverse' }}>
+                <div className="absolute bottom-0 w-full h-5 bg-[#FFCC99] rounded-full border-t-2 border-black"></div>
+             </div>
+
+             {/* BODY (Tracksuit) - Rounded Square */}
+             <div className="absolute bottom-6 left-4 w-16 h-16 bg-[#006400] border-4 border-black rounded-xl z-10 flex flex-col items-center overflow-hidden shadow-sm">
+                {/* Suspenders / Stripes */}
+                <div className="w-full h-full flex justify-between px-3">
+                   <div className="w-3 h-full bg-yellow-400 border-x border-black/10"></div>
+                   <div className="w-3 h-full bg-yellow-400 border-x border-black/10"></div>
+                </div>
+             </div>
+
+             {/* RIGHT ARM (In Front of Body) */}
+             <div className={`absolute top-14 right-0 w-5 h-12 bg-[#006400] border-3 border-black rounded-full origin-top z-20 ${isRunning ? 'animate-run-arm' : '-rotate-12'}`}>
+                <div className="absolute bottom-0 w-full h-5 bg-[#FFCC99] rounded-full border-t-2 border-black"></div>
+             </div>
+
+             {/* HEAD - More Squared like screenshot */}
+             <div className="absolute top-2 left-2 w-20 h-20 bg-[#FFCC99] border-4 border-black rounded-xl z-30 shadow-sm">
+                 {/* Mustache - Iconic */}
+                <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 w-12 h-4 bg-black rounded-full z-40"></div>
+                
+                {/* Sunglasses - Pixelated Style */}
+                <div className="absolute top-6 left-1/2 transform -translate-x-1/2 flex gap-1 z-40">
+                   <div className="w-8 h-6 bg-black rounded-sm border-2 border-white/20"></div>
+                   <div className="w-8 h-6 bg-black rounded-sm border-2 border-white/20"></div>
+                   {/* Bridge */}
+                   <div className="absolute top-2 left-1/2 transform -translate-x-1/2 w-2 h-1 bg-black"></div>
+                </div>
+             </div>
+
+             {/* BERET (Red) - Bigger & Flatter */}
+             <div className="absolute -top-2 left-0 w-26 h-12 bg-[#DC143C] border-4 border-black rounded-t-lg rounded-bl-3xl z-40 transform -rotate-2 shadow-md">
+                 {/* Yellow Pin */}
+                 <div className="absolute bottom-3 right-4 w-3 h-3 bg-yellow-400 rounded-full border-2 border-black"></div>
+             </div>
+
+             {/* LEGS */}
+             <div className={`absolute bottom-0 left-6 w-5 h-8 bg-black z-0 border-2 border-gray-800 rounded-b-md ${isRunning ? 'origin-top animate-run-arm' : ''}`}></div>
+             <div className={`absolute bottom-0 right-7 w-5 h-8 bg-black z-0 border-2 border-gray-800 rounded-b-md ${isRunning ? 'origin-top animate-run-arm' : ''}`} style={{ animationDirection: 'reverse' }}></div>
+          </div>
+        );
+      };
+
+      const PoliceCar = () => (
+          <div className="relative w-32 h-16 animate-bob">
+              <div className="absolute bottom-2 left-0 w-32 h-12 bg-neo-black border-2 border-white rounded-t-xl z-10"></div>
+              <div className="absolute top-0 left-8 w-16 h-4 flex animate-pulse">
+                   <div className="w-1/2 h-full bg-red-600 rounded-l-md shadow-[0_0_15px_#ff0000]"></div>
+                   <div className="w-1/2 h-full bg-blue-600 rounded-r-md shadow-[0_0_15px_#0000ff]"></div>
+              </div>
+              <div className="absolute bottom-0 left-4 w-6 h-6 bg-black rounded-full border-2 border-gray-500 z-20 animate-spin"></div>
+              <div className="absolute bottom-0 right-4 w-6 h-6 bg-black rounded-full border-2 border-gray-500 z-20 animate-spin"></div>
+          </div>
+      );
+
+      const BossScene = ({ tags, isTransitioning, riskLevel }) => {
+        
+        const isNight = tags.includes('DARK') || tags.includes('MYSTERY') || tags.includes('SCAM');
+        const isNature = tags.includes('ANIMAL') || tags.includes('SURVIVAL') || tags.includes('WATER');
+        const isCyber = tags.includes('DIGITAL') || tags.includes('MECH') || tags.includes('ALIEN');
+        const isHighRisk = riskLevel > 50;
+        
+        // Base background
+        const bgColor = isNight ? 'bg-sky-night' : isNature ? 'bg-green-300' : isCyber ? 'bg-purple-900' : 'bg-sky-day';
+        
+        // Tag Translations
+        const tagTranslations = {
+          'PHONE': '通讯', 'SCAM': '诈骗', 'DIGITAL': '电子', 'HUMAN': '人类',
+          'CITY': '城市', 'CAMERA': '监控', 'ANIMAL': '生物', 'DANGER': '危险',
+          'MECH': '机械', 'ALIEN': '异常', 'MYSTERY': '神秘', 'LIGHT': '强光',
+          'DARK': '黑暗', 'WATER': '环境', 'FOOD': '补给',
+        };
+
+        return (
+          <div className={`w-full h-64 relative overflow-hidden border-4 border-black mb-4 shadow-inner-hard transition-colors duration-500 ${bgColor}`}>
+             
+             {/* Background Grid */}
+             {(isNight || isCyber) && <div className="absolute inset-0 bg-grid opacity-30"></div>}
+
+             {/* High Risk Alarm Overlay */}
+             {isHighRisk && (
+                 <div className="absolute inset-0 z-0 animate-pulse opacity-20 bg-red-600 mix-blend-overlay pointer-events-none"></div>
+             )}
+
+             {/* Celestial Bodies */}
+             <div className="absolute top-6 right-10 animate-float z-10">
+                {isNight ? <Moon size={48} className="text-yellow-200 fill-yellow-200" /> : <Sun size={48} className="text-yellow-400 fill-yellow-400" />}
+             </div>
+
+             {/* Clouds */}
+             <div className="absolute top-8 left-10 opacity-80 animate-bounce-slow">
+                 <Cloud size={60} className="text-white fill-white/80" />
+             </div>
+             <div className="absolute top-16 right-32 opacity-60 animate-bounce-slow" style={{ animationDelay: '1s' }}>
+                 <Cloud size={40} className="text-white fill-white/60" />
+             </div>
+
+             {/* Moving Background Elements (Parallax) */}
+             <div className={`flex gap-12 absolute bottom-8 left-0 w-[200%] items-end opacity-90 ${isTransitioning ? 'animate-scroll-bg-fast' : 'animate-scroll-bg'}`}>
+                 {[...Array(10)].map((_, i) => (
+                      <div key={i} className={`w-12 h-${30 + (i%3)*10} border-2 border-black ${isNature ? 'bg-green-700 rounded-t-full h-16' : 'bg-gray-500 h-20'}`}></div>
+                 ))}
+             </div>
+
+             {/* Road/Ground */}
+             <div className="absolute bottom-0 w-full h-10 bg-[#333] border-t-4 border-black z-10">
+                 {/* Road Stripes */}
+                 <div className={`absolute top-3 left-0 w-[200%] h-0 border-t-4 border-dashed border-gray-400 ${isTransitioning ? 'animate-scroll-bg-fast' : 'animate-scroll-bg'}`}></div>
+             </div>
+
+             {/* The Boss Character */}
+             <div className={`absolute bottom-6 left-1/2 transform -translate-x-1/2 z-20 transition-all duration-500 ease-in-out ${isTransitioning ? 'left-[70%] scale-110' : 'left-[30%]'}`}>
+                <BossCharacter isRunning={isTransitioning} />
+                
+                {/* Reaction Bubble (Screenshot Style) */}
+                {!isTransitioning && (
+                   <div className="absolute -top-12 -right-12 animate-pop-in">
+                      <div className="bg-white border-2 border-black px-2 py-1 rounded-lg shadow-sm">
+                         {isHighRisk ? <span className="text-red-600 font-black text-xl">!</span> : <MessageCircle size={20} />}
+                      </div>
+                   </div>
+                )}
+             </div>
+
+             {/* Chasing Police Car */}
+             {isHighRisk && isTransitioning && (
+                 <div className="absolute bottom-6 left-[-150px] z-20 animate-slide-up" style={{ animationDuration: '1.5s' }}>
+                     <PoliceCar />
+                 </div>
+             )}
+
+             {/* Speed Lines (Anime Style) */}
+             {isTransitioning && (
+                 <div className="absolute inset-0 z-30 pointer-events-none">
+                   <div className="absolute top-10 w-full h-[2px] bg-white opacity-50 animate-speed-line"></div>
+                   <div className="absolute top-1/2 w-full h-[1px] bg-white opacity-40 animate-speed-line" style={{ animationDelay: '0.1s' }}></div>
+                   <div className="absolute bottom-20 w-full h-[3px] bg-white opacity-60 animate-speed-line" style={{ animationDelay: '0.2s' }}></div>
+                 </div>
+             )}
+
+             {/* Tags Display (Top Left) */}
+             <div className="absolute top-3 left-3 flex flex-col gap-2 items-start z-30">
+               {tags.map((t) => (
+                 <div key={t} className="bg-black/90 text-white text-xs px-2 py-1 font-mono border border-white/50 shadow-sm">
+                   #{tagTranslations[t] || t}
+                 </div>
+               ))}
+             </div>
+          </div>
+        );
+      };
+
+      const ResultCard = ({ text, deltas }) => {
+          return (
+              <div className="w-full flex flex-col items-center animate-slide-up z-20">
+                  <div className="w-full bg-white border-4 border-black p-4 shadow-hard mb-4 relative">
+                      {/* Paper Texture */}
+                      <div className="absolute inset-0 bg-stripes opacity-10 pointer-events-none"></div>
+                      
+                      <div className="relative z-10 flex flex-col gap-4">
+                          {/* Header */}
+                          <div className="flex items-center justify-between border-b-2 border-black pb-2">
+                              <span className="font-black text-xl italic bg-neo-yellow px-2 border border-black transform -rotate-1">事件结算</span>
+                              <span className="font-mono text-xs text-gray-500">{new Date().toLocaleTimeString()}</span>
+                          </div>
+
+                          {/* Stat Changes */}
+                          <div className="flex flex-wrap gap-3">
+                              {deltas.money !== 0 && (
+                                  <div className={`flex items-center gap-1 font-bold ${deltas.money && deltas.money > 0 ? 'text-green-700' : 'text-red-600'}`}>
+                                      <div className={`w-2 h-2 rounded-full ${deltas.money && deltas.money > 0 ? 'bg-green-600' : 'bg-red-600'}`}></div>
+                                      资金 {deltas.money && deltas.money > 0 ? '+' : ''}{deltas.money}
+                                  </div>
+                              )}
+                              {deltas.risk !== 0 && (
+                                  <div className={`flex items-center gap-1 font-bold ${deltas.risk && deltas.risk > 0 ? 'text-red-600' : 'text-blue-600'}`}>
+                                      <div className={`w-2 h-2 rounded-full ${deltas.risk && deltas.risk > 0 ? 'bg-red-600' : 'bg-blue-600'}`}></div>
+                                      曝光 {deltas.risk && deltas.risk > 0 ? '+' : ''}{deltas.risk}%
+                                  </div>
+                              )}
+                               {deltas.sanity !== 0 && (
+                                  <div className={`flex items-center gap-1 font-bold ${deltas.sanity && deltas.sanity > 0 ? 'text-purple-600' : 'text-gray-600'}`}>
+                                      <div className={`w-2 h-2 rounded-full ${deltas.sanity && deltas.sanity > 0 ? 'bg-purple-600' : 'bg-gray-600'}`}></div>
+                                      理智 {deltas.sanity && deltas.sanity > 0 ? '+' : ''}{deltas.sanity}
+                                  </div>
+                              )}
+                          </div>
+
+                          {/* Story Text */}
+                          <div className="bg-gray-50 border-2 border-black p-3 font-medium min-h-[60px] flex items-center">
+                              <TypewriterText text={text} />
+                          </div>
+                      </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-2 text-gray-500 font-mono text-sm animate-pulse">
+                      <span>RUNNING TO NEXT AREA</span>
+                      <div className="flex gap-1">
+                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                      </div>
+                  </div>
+              </div>
+          );
+      }
+
+      // --- APP ---
+
+      const INITIAL_STATS = {
+        time: 72,
+        money: 1000000, 
+        risk: 0,
+        sanity: 100,
+        talents: [],
+        history: [{ turn: 0, risk: 0, money: 1000000, sanity: 100 }],
+        eventCount: 0,
+      };
+
+      const getRandomElements = (arr, count) => {
+        const shuffled = [...arr].sort(() => 0.5 - Math.random());
+        return shuffled.slice(0, count);
+      };
+
+      const formatMoney = (amount) => {
+        if (Math.abs(amount) >= 1000000) return `¥${(amount / 1000000).toFixed(1)}w`;
+        if (Math.abs(amount) >= 10000) return `¥${(amount / 10000).toFixed(0)}w`;
+        return `¥${amount}`;
+      };
+
+      const TalentIcons = {
+        [TalentType.SURVIVAL]: Heart,
+        [TalentType.RESOURCE]: DollarSign,
+        [TalentType.SOCIAL]: Users,
+        [TalentType.TIME]: Clock,
+        [TalentType.SKILL]: Zap,
+        [TalentType.SPECIAL]: Star,
+      };
+
+      const TalentTypeCN = {
+        [TalentType.SURVIVAL]: '生存',
+        [TalentType.RESOURCE]: '资源',
+        [TalentType.SOCIAL]: '社交',
+        [TalentType.TIME]: '时间',
+        [TalentType.SKILL]: '技能',
+        [TalentType.SPECIAL]: '特殊',
+      };
+
+      function App() {
+        const [phase, setPhase] = useState(GamePhase.START);
+        const [stats, setStats] = useState(INITIAL_STATS);
+        const [currentEvent, setCurrentEvent] = useState(null);
+        const [availableTalents, setAvailableTalents] = useState([]);
+        const [talentRefreshCount, setTalentRefreshCount] = useState(1);
+        const [lastResult, setLastResult] = useState(null);
+        const [lastDeltas, setLastDeltas] = useState({});
+        const [ending, setEnding] = useState(null);
+        const [isTransitioning, setIsTransitioning] = useState(false); 
+        const [showSettings, setShowSettings] = useState(false);
+        const [audioEnabled, setAudioEnabled] = useState(true);
+
+        const startGame = () => {
+          setStats(INITIAL_STATS);
+          setAvailableTalents(getRandomElements(TALENTS, 3));
+          setTalentRefreshCount(1);
+          setLastResult(null);
+          setLastDeltas({});
+          setEnding(null);
+          setPhase(GamePhase.TALENT_SELECT);
+        };
+
+        const selectTalent = (talent) => {
+          let newStats = { ...stats, talents: [...stats.talents, talent.id] };
+          
+          if (talent.id === 'T02') { newStats.money = 2000000; newStats.risk = 15; }
+          if (talent.id === 'T04') { newStats.time = 60; }
+          if (talent.id === 'T09') { newStats.risk += 20; }
+
+          setStats(newStats);
+          startLoop(newStats);
+        };
+
+        const refreshTalents = () => {
+          if (talentRefreshCount > 0) {
+            setAvailableTalents(getRandomElements(TALENTS, 3));
+            setTalentRefreshCount(0);
+          }
+        };
+
+        const startLoop = (currentStats) => {
+          setPhase(GamePhase.GAME_LOOP);
+          nextEvent(currentStats);
+        };
+
+        const nextEvent = (currentStats) => {
+          const matchedEnding = ENDINGS.find(e => e.condition(currentStats));
+          if (matchedEnding) {
+              setEnding(matchedEnding);
+              setPhase(GamePhase.GAME_OVER);
+              return;
+          }
+          const randomEvent = EVENTS[Math.floor(Math.random() * EVENTS.length)];
+          setCurrentEvent(randomEvent);
+        };
+
+        const handleChoice = (choiceIndex) => {
+          if (!currentEvent) return;
+          const choice = currentEvent.choices[choiceIndex];
+          
+          const changes = choice.effect(stats);
+          
+          if (stats.talents.includes('T13') && changes.money && changes.money < 0) {
+             changes.money = Math.floor(changes.money * 0.8);
+          }
+          if (stats.talents.includes('T07') && changes.time && changes.time < 0) {
+              changes.time = Math.min(0, changes.time + 0.5);
+          }
+
+          const newStats = {
+            ...stats,
+            ...changes,
+            eventCount: stats.eventCount + 1,
+          };
+
+          newStats.risk = Math.max(0, Math.min(100, newStats.risk));
+          newStats.sanity = Math.max(0, Math.min(100, newStats.sanity));
+          newStats.time = Math.max(0, newStats.time);
+
+          newStats.history = [...stats.history, { 
+            turn: newStats.eventCount, 
+            risk: newStats.risk, 
+            money: newStats.money,
+            sanity: newStats.sanity
+          }];
+
+          const deltas = {
+              money: (newStats.money - stats.money) || 0,
+              risk: (newStats.risk - stats.risk) || 0,
+              sanity: (newStats.sanity - stats.sanity) || 0,
+              time: (newStats.time - stats.time) || 0,
+          };
+
+          setStats(newStats);
+          setLastResult(choice.resultText);
+          setLastDeltas(deltas);
+          
+          setIsTransitioning(true);
+
+          setTimeout(() => {
+              setLastResult(null);
+              setIsTransitioning(false); 
+              nextEvent(newStats);
+          }, 3500);
+        };
+
+        const SettingsModal = () => {
+          if (!showSettings) return null;
+          return (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+              <Card className="w-full max-w-sm bg-white shadow-hard" title="系统设置">
+                 <div className="flex flex-col gap-6 mt-2">
+                    <div className="flex justify-between items-center border-b-2 border-black pb-4">
+                        <div className="flex flex-col">
+                            <span className="font-black text-lg">游戏音效</span>
+                            <span className="text-xs text-gray-500 font-mono">Audio & SFX</span>
+                        </div>
+                        <button onClick={() => setAudioEnabled(!audioEnabled)} className={`flex items-center gap-2 font-mono font-bold border-2 border-black px-3 py-2 shadow-hard-sm ${audioEnabled ? 'bg-neo-yellow' : 'bg-gray-200'}`}>
+                            {audioEnabled ? <Volume2 size={20} /> : <VolumeX size={20} />}
+                            {audioEnabled ? "开启" : "静音"}
+                        </button>
+                    </div>
+                    <div className="flex justify-between items-center border-b-2 border-black pb-4">
+                        <div className="flex flex-col">
+                            <span className="font-black text-lg">游戏进度</span>
+                            <span className="text-xs text-gray-500 font-mono">当前存档</span>
+                        </div>
+                        {phase !== GamePhase.START ? (
+                             <button onClick={() => { setPhase(GamePhase.START); setShowSettings(false); }} className="flex items-center gap-2 font-bold text-white bg-neo-action border-2 border-black px-3 py-2 shadow-hard-sm hover:translate-x-1">
+                                <LogOut size={18} /> 放弃逃亡
+                             </button>
+                        ) : (<span className="text-gray-400 font-mono text-sm bg-gray-100 px-2 py-1 border border-gray-300">未开始</span>)}
+                    </div>
+                     <Button onClick={() => setShowSettings(false)} fullWidth variant="primary" icon={X}>返回游戏</Button>
+                 </div>
+              </Card>
+            </div>
+          );
+        }
+
+        if (phase === GamePhase.GAME_LOOP) {
+          return (
+            <div className="h-screen w-full flex flex-col relative bg-neo-bg overflow-hidden text-neo-black animate-in fade-in duration-500">
+              <div className="absolute top-[88px] right-2 z-40 animate-pop-in">
+                  <IconButton icon={Settings} onClick={() => setShowSettings(true)} variant="primary" />
+              </div>
+
+              <div 
+                  className="vignette-risk" 
+                  style={{ 
+                      boxShadow: `inset 0 0 ${stats.risk * 5}px ${stats.risk > 70 ? 'rgba(255,0,0,0.8)' : 'rgba(255,0,0,0.2)'}`,
+                      opacity: stats.risk > 50 ? 1 : 0.5
+                  }}
+              />
+
+              <div className="grid grid-cols-3 border-b-4 border-black bg-white z-30 shadow-hard-sm sticky top-0">
+                  <div className="p-2 border-r-4 border-black flex flex-col items-center justify-center bg-white">
+                      <div className="flex items-center gap-1 text-neo-action font-black text-xl">
+                          <Clock size={20} strokeWidth={3} />
+                          <span>{stats.time}h</span>
+                      </div>
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">剩余时间</span>
+                  </div>
+                  
+                  <div className={`p-2 border-r-4 border-black flex flex-col items-center justify-center transition-colors duration-500 ${stats.risk > 80 ? 'bg-red-100' : 'bg-white'}`}>
+                      <div className={`flex items-center gap-1 font-black text-xl ${stats.risk > 80 ? 'text-red-600 animate-pulse' : stats.risk > 50 ? 'text-orange-500' : 'text-gray-800'}`}>
+                          <Siren size={20} strokeWidth={3} />
+                          <span>{stats.risk}%</span>
+                      </div>
+                       <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">曝光度</span>
+                  </div>
+
+                  <div className="p-2 flex flex-col items-center justify-center bg-white relative overflow-hidden">
+                       <div className="flex flex-col items-end w-full px-2">
+                           <div className="flex items-center gap-1 text-[#228B22] font-black text-sm">
+                              <DollarSign size={14} strokeWidth={3} />
+                              <span>{formatMoney(stats.money)}</span>
+                           </div>
+                           <div className="flex items-center gap-1 text-neo-special font-black text-sm">
+                              <Brain size={14} strokeWidth={3} />
+                              <span>{stats.sanity}</span>
+                           </div>
+                       </div>
+                       <div className="absolute bottom-0 left-0 w-full h-1 bg-gray-200">
+                          <div className="h-full bg-neo-special transition-all duration-500" style={{ width: `${stats.sanity}%` }}></div>
+                       </div>
+                  </div>
+              </div>
+
+              <div className="flex-1 p-5 flex flex-col relative z-20 overflow-y-auto">
+                  <div className="animate-pop-in">
+                      <BossScene tags={currentEvent?.tags || []} isTransitioning={isTransitioning} riskLevel={stats.risk} />
+                  </div>
+
+                  {lastResult ? (
+                      <ResultCard text={lastResult} deltas={lastDeltas} />
+                  ) : (
+                      <>
+                          <div className="mb-6 animate-slide-up" style={{ animationDelay: '100ms' }}>
+                              <div className="inline-block bg-neo-yellow border-2 border-black px-3 py-1 mb-3 transform -skew-x-12 shadow-sm">
+                                  <h3 className="font-black text-lg uppercase transform skew-x-12">
+                                      {currentEvent?.title}
+                                  </h3>
+                              </div>
+                              <div className="bg-white border-2 border-black p-4 shadow-hard-sm">
+                                  <p className="font-sans text-lg font-bold leading-relaxed text-gray-900">
+                                      {currentEvent?.description}
+                                  </p>
+                              </div>
+                          </div>
+
+                          <div className="flex flex-col gap-3 mt-auto pb-4">
+                              {currentEvent?.choices.map((choice, idx) => {
+                                  const hasMoney = !choice.moneyReq || stats.money >= choice.moneyReq;
+                                  const hasTalent = !choice.talentReq || stats.talents.includes(choice.talentReq);
+                                  const isLocked = !hasMoney || !hasTalent;
+
+                                  if (!hasTalent && choice.type === 'TALENT') return null;
+
+                                  return (
+                                      <div key={idx} className="animate-slide-up" style={{ animationDelay: `${200 + idx * 100}ms` }}>
+                                          <Button 
+                                              onClick={() => handleChoice(idx)}
+                                              disabled={isLocked}
+                                              variant={choice.type === 'AGGRESSIVE' ? 'danger' : choice.type === 'SAFE' ? 'secondary' : choice.type === 'TALENT' ? 'special' : 'primary'}
+                                              className={`text-left justify-between items-center ${isLocked ? 'grayscale opacity-70' : ''}`}
+                                          >
+                                              <div className="flex flex-col items-start">
+                                                  <span className="text-base font-black tracking-wide">{choice.text}</span>
+                                                  {choice.moneyReq && <span className="text-xs font-mono font-bold opacity-80 mt-1 bg-black/10 px-1">花费: {formatMoney(choice.moneyReq)}</span>}
+                                              </div>
+                                              {isLocked && !hasMoney && <span className="text-xs bg-red-600 text-white px-2 py-1 font-bold border border-black">资金不足</span>}
+                                          </Button>
+                                      </div>
+                                  );
+                              })}
+                          </div>
+                      </>
+                  )}
+              </div>
+            </div>
+          );
+        }
+
+        if (phase === GamePhase.START) {
+          return (
+            <div className="h-screen w-full flex flex-col items-center justify-center p-6 relative overflow-hidden bg-neo-bg">
+              <SettingsModal />
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-neo-yellow/10 to-transparent h-[200%] w-full animate-scan pointer-events-none"></div>
+              <div className="z-10 flex flex-col items-center gap-8 max-w-md w-full animate-pop-in">
+                  <div className="border-8 border-black p-6 bg-white shadow-hard relative group">
+                       <div className="absolute -top-4 -right-4 bg-neo-action text-white px-2 font-bold transform rotate-12 border-2 border-black shadow-sm group-hover:rotate-0 transition-transform">Hard Core</div>
+                       <GlitchText text="岛主别跑" size="xl" />
+                       <div className="text-center font-black text-2xl mt-2 tracking-widest bg-black text-white p-1">最后72小时</div>
+                  </div>
+                  <div className="w-full space-y-4">
+                    <Button onClick={startGame} fullWidth variant="primary" icon={Play}>开始逃亡</Button>
+                    <Button onClick={() => setPhase(GamePhase.TALENT_INDEX)} fullWidth variant="secondary" icon={Brain}>天赋图鉴</Button>
+                    <Button onClick={() => setShowSettings(true)} fullWidth variant="secondary" icon={Settings}>游戏设置</Button>
+                  </div>
+                  <div className="mt-8 text-xs font-mono text-gray-500 text-center bg-white p-2 border-2 border-black shadow-sm">
+                    别回头，向前跑！<br/> 新丑主义 Roguelike 策略生存
+                  </div>
+              </div>
+            </div>
+          );
+        }
+
+        if (phase === GamePhase.TALENT_INDEX) {
+          return (
+            <div className="h-screen w-full bg-neo-bg flex flex-col">
+              <div className="p-4 border-b-4 border-black bg-white flex justify-between items-center shadow-hard-sm z-20 sticky top-0">
+                 <div className="flex items-center gap-3">
+                     <div className="bg-neo-yellow p-2 border-2 border-black"><Brain size={24} /></div>
+                     <h2 className="text-2xl font-black italic">天赋图鉴</h2>
+                 </div>
+                 <IconButton icon={ArrowLeft} onClick={() => setPhase(GamePhase.START)} />
+              </div>
+              <div className="flex-1 overflow-y-auto p-4 animate-slide-up z-10">
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-10">
+                    {TALENTS.map((t) => {
+                        const Icon = TalentIcons[t.type] || Star;
+                        return (
+                            <Card key={t.id} className="transform transition-transform hover:-translate-y-1" title={t.rarity === 'LEGENDARY' ? '传说' : t.rarity === 'RARE' ? '稀有' : '普通'}>
+                                <div className="flex items-start gap-4">
+                                    <div className={`p-3 border-2 border-black shadow-hard-sm flex-shrink-0 text-black ${t.rarity === 'LEGENDARY' ? 'bg-neo-yellow' : t.rarity === 'RARE' ? 'bg-neo-safe' : 'bg-gray-300'}`}>
+                                        <Icon size={28} strokeWidth={2.5} />
+                                    </div>
+                                    <div>
+                                        <div className="font-black text-xl mb-1">{t.name}</div>
+                                        <div className="text-xs font-mono mb-2 text-gray-500 border border-gray-300 inline-block px-1 bg-gray-50">{TalentTypeCN[t.type]}</div>
+                                        <p className="text-sm font-bold text-gray-800 leading-tight">{t.description}</p>
+                                    </div>
+                                </div>
+                            </Card>
+                        )
+                    })}
+                 </div>
+                 <div className="text-center text-gray-400 font-mono text-xs mt-4 pb-4">--- 底库数据加载完毕 ---</div>
+              </div>
+            </div>
+          )
+        }
+
+        if (phase === GamePhase.TALENT_SELECT) {
+          return (
+            <div className="min-h-screen w-full p-4 flex flex-col bg-neo-bg">
+              <SettingsModal />
+              <div className="flex justify-between items-start mb-6 animate-slide-up">
+                  <h2 className="text-3xl font-black border-b-8 border-black inline-block bg-neo-yellow px-2">选择天赋</h2>
+                  <IconButton icon={Settings} onClick={() => setShowSettings(true)} />
+              </div>
+              <div className="flex-1 flex flex-col gap-5 overflow-y-auto pb-20">
+                {availableTalents.map((t, i) => {
+                  const Icon = TalentIcons[t.type] || Star;
+                  return (
+                      <div key={t.id} className="animate-pop-in" style={{ animationDelay: `${i * 100}ms` }}>
+                          <Card className="cursor-pointer hover:scale-[1.02] transition-transform active:scale-95 group" title={t.rarity === 'LEGENDARY' ? '传说' : t.rarity === 'RARE' ? '稀有' : '普通'}>
+                              <div onClick={() => selectTalent(t)} className="flex gap-4 items-center">
+                                  <div className={`p-3 border-2 border-black rounded-full shadow-hard-sm group-hover:bg-black group-hover:text-white transition-colors text-black ${t.rarity === 'LEGENDARY' ? 'bg-neo-yellow' : t.rarity === 'RARE' ? 'bg-neo-safe' : 'bg-gray-300'}`}>
+                                      <Icon size={24} />
+                                  </div>
+                                  <div className="flex-1">
+                                      <div className="flex justify-between items-center mb-1"><span className="font-black text-xl">{t.name}</span></div>
+                                      <p className="font-sans font-medium text-base leading-relaxed text-gray-800">{t.description}</p>
+                                  </div>
+                              </div>
+                          </Card>
+                      </div>
+                  )
+                })}
+              </div>
+              {talentRefreshCount > 0 && (
+                   <Button onClick={refreshTalents} variant="secondary" icon={RefreshCw} className="mt-4 shadow-hard animate-pop-in" style={{ animationDelay: '300ms' }}>刷新天赋 ({talentRefreshCount})</Button>
+              )}
+            </div>
+          );
+        }
+
+        if (phase === GamePhase.GAME_OVER) {
+          return (
+            <div className="min-h-screen w-full bg-neo-bg p-4 flex flex-col items-center justify-center animate-in fade-in duration-700">
+               <SettingsModal />
+               <div className="absolute top-4 right-4 z-50">
+                   <IconButton icon={Settings} onClick={() => setShowSettings(true)} />
+               </div>
+               <Card className="w-full max-w-md mb-6 bg-white shadow-hard animate-slide-up">
+                  <div className="text-center border-b-4 border-black pb-4 mb-4 bg-stripes">
+                      <GlitchText text={ending?.title || "游戏结束"} size="lg" color={stats.time <= 0 && ending?.id === 'E00' ? "text-neo-safe" : "text-neo-action"} />
+                  </div>
+                  <p className="font-sans font-bold text-lg text-justify mb-6 px-2 leading-relaxed">{ending?.description}</p>
+                  <div className="h-40 w-full bg-white border-2 border-black p-2 mb-4">
+                      <ResponsiveContainer width="100%" height="100%">
+                          <AreaChart data={stats.history}>
+                               <XAxis dataKey="turn" hide />
+                               <YAxis hide domain={[0, 100]} />
+                               <Tooltip labelStyle={{color: 'black'}} itemStyle={{color: 'black'}} />
+                               <Area type="monotone" dataKey="risk" stroke="#FF4500" fill="#FF4500" fillOpacity={0.3} strokeWidth={3} />
+                               <Area type="monotone" dataKey="sanity" stroke="#9370DB" fill="#9370DB" fillOpacity={0.3} strokeWidth={3} />
+                          </AreaChart>
+                      </ResponsiveContainer>
+                      <div className="flex justify-between px-2 text-xs font-bold mt-1 uppercase">
+                          <span className="text-neo-action">曝光度 (红)</span>
+                          <span className="text-neo-special">理智 (紫)</span>
+                      </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4 font-mono text-sm border-t-4 border-black pt-4">
+                      <div className="bg-neo-bg p-2 border border-black text-center">
+                          <div className="text-xs text-gray-500">剩余资金</div>
+                          <div className="font-black text-lg">{formatMoney(stats.money)}</div>
+                      </div>
+                      <div className="bg-neo-bg p-2 border border-black text-center">
+                          <div className="text-xs text-gray-500">存活时间</div>
+                          <div className="font-black text-lg">{72 - Math.max(0, stats.time)} 小时</div>
+                      </div>
+                  </div>
+               </Card>
+               <Button onClick={startGame} variant="primary" icon={RefreshCw} fullWidth className="animate-pop-in" style={{ animationDelay: '500ms' }}>再次挑战</Button>
+            </div>
+          );
+        }
+        return null;
+      }
+
+      // --- MOUNT ---
+      const root = ReactDOM.createRoot(document.getElementById('root'));
+      root.render(
+        <React.StrictMode>
+          <App />
+        </React.StrictMode>
+      );
+    </script>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>
