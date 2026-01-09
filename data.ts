@@ -1,284 +1,449 @@
 
 import { Talent, GameEvent, Ending, TalentType } from './types';
 
-// --- 天赋 (TALENTS) - 岛主特供版 ---
+// --- 天赋 (TALENTS) - V2.0 现实主义版 ---
 export const TALENTS: Talent[] = [
-  { id: 'T01', name: '老司机', type: TalentType.SURVIVAL, rarity: 'RARE', description: '早年开过大巴车。驾驶技术一流，且能消化任何路边摊（吃垃圾不扣理智）。' },
-  { id: 'T02', name: '资源大亨', type: TalentType.RESOURCE, rarity: 'LEGENDARY', description: '手里握着岛上的能源命脉。初始资金翻倍 (¥600w)，但更容易被“北方大国”盯上（曝光度+20%）。' },
-  { id: 'T03', name: '电视狂人', type: TalentType.SOCIAL, rarity: 'COMMON', description: '每天必须上电视演讲4小时。直播类事件理智恢复翻倍，但时间消耗+1h。' },
-  { id: 'T04', name: '神秘签证', type: TalentType.SPECIAL, rarity: 'LEGENDARY', description: '在东方某个雪国和沙漠古国有铁哥们。特定外交事件可以直接通关。' },
-  { id: 'T05', name: '舞厅之王', type: TalentType.SKILL, rarity: 'COMMON', description: '不管发生什么，先跳一段舞。理智上限+20，由于身法灵活，逃跑成功率提升。' },
-  { id: 'T06', name: '小鸟通灵', type: TalentType.SPECIAL, rarity: 'RARE', description: '声称能听懂小鸟说话（前任岛主显灵）。遇到“神秘/自然”事件时有特殊选项。' },
-  { id: 'T07', name: '嘴炮王者', type: TalentType.SOCIAL, rarity: 'RARE', description: '只要骂“金发老头”就能涨粉丝。选择“硬刚”类选项时，理智大幅恢复，但曝光度激增。' },
-  { id: 'T11', name: '替身使者', type: TalentType.SURVIVAL, rarity: 'LEGENDARY', description: '你有三个长得一样的替身。可以抵挡一次必死结局（风险100%时触发逃生）。' },
-  { id: 'T13', name: '印钞机', type: TalentType.RESOURCE, rarity: 'COMMON', description: '没钱了就印！每回合自动获得¥10w，但通货膨胀导致所有商品价格+50%。' },
+  // 核心生存
+  { id: 'T01', name: '铁胃', type: TalentType.SURVIVAL, rarity: 'RARE', description: '在丛林能吃青蛙，在贫民窟能吃过期罐头。食物类事件回血翻倍，免疫中毒。' },
+  { id: 'T02', name: '瑞士户口', type: TalentType.RESOURCE, rarity: 'LEGENDARY', description: '初始资金 $500w。虽然账户常被冻结，但瘦死的骆驼比马大。' },
+  { id: 'T03', name: '网红体质', type: TalentType.SOCIAL, rarity: 'COMMON', description: '发推特效果翻倍。在这个流量为王的时代，黑红也是红。' },
+  { id: 'T04', name: '地堡建筑师', type: TalentType.SKILL, rarity: 'RARE', description: '在地堡 (Route C) 中，理智消耗减半，且能发现隐藏的物资。' },
+  
+  // 策略与技能
+  { id: 'T05', name: '老实人', type: TalentType.SOCIAL, rarity: 'COMMON', description: '容易被诈骗(金钱损失+20%)，但在经过检查站/盘问时，通过率大幅提升。' },
+  { id: 'T06', name: '黑客帝国', type: TalentType.SKILL, rarity: 'LEGENDARY', description: '精通加密货币和网络战。解锁所有“电子/网络”事件的隐藏选项。' },
+  { id: 'T07', name: '时间管理', type: TalentType.TIME, rarity: 'RARE', description: '所有消耗时间的事件，时间消耗减少 0.5h。逃亡也要讲效率。' },
+  { id: 'T08', name: '甚至连号', type: TalentType.SOCIAL, rarity: 'COMMON', description: '你的电话号码太尊贵。诈骗短信会变成送钱事件，但容易被定位。' },
+  
+  // 特殊
+  { id: 'T09', name: '被迫害妄想', type: TalentType.SKILL, rarity: 'COMMON', description: '基础曝光度+10%，但能提前看见选项的风险值 (Risk)。' },
+  { id: 'T10', name: '前特种兵', type: TalentType.SKILL, rarity: 'RARE', description: '战斗/突围事件必定成功，且不扣健康值。' },
+  { id: 'T11', name: '演说家', type: TalentType.SOCIAL, rarity: 'LEGENDARY', description: '只要理智尚存，你就能忽悠任何人。社交类事件收益翻倍。' },
+  { id: 'T12', name: '冷血动物', type: TalentType.SPECIAL, rarity: 'RARE', description: '无论发生什么悲剧，理智都不会扣除超过 5 点。' },
 ];
 
-// --- 事件库 (EVENTS) - 岛主别跑版 ---
+// --- 事件库 (EVENTS) - V2.0 ---
 export const EVENTS: GameEvent[] = [
-  // --- 热点事件：专机被扣 ---
+  // ================= FALLBACK: 兜底事件 (防止白屏) =================
   {
-    id: 'EVENT_PLANE',
-    title: '专机去哪了',
-    description: '你的私人专机在邻国维护时，突然被北方大国的特工“合法没收”了！听说是一个金发老头亲自下的令。',
-    tags: ['SKY', 'DANGER', 'CITY'],
+    id: 'U01_HUNGRY',
+    title: '漫长的等待',
+    description: '暂时没有突发状况。你躲在角落里，肚子开始咕咕叫。时间的流逝让你感到焦虑。',
+    tags: ['SURVIVAL', 'TIME'],
+    priority: 0, 
+    repeatable: true, // 关键：允许重复触发
     choices: [
       {
-        text: '痛骂金发老头',
-        type: 'AGGRESSIVE',
-        effect: (s) => ({ risk: s.risk + 15, sanity: s.sanity + 20, time: s.time - 1 }),
-        resultText: '你在电视上骂了两个小时。虽然没飞机了，但岛民们觉得你很酷！',
-      },
-      {
-        text: '买架新的 ($80w)',
-        type: 'NORMAL',
-        moneyReq: 800000,
-        effect: (s) => ({ money: s.money - 800000, time: s.time - 2 }),
-        resultText: '你动用私房钱买了一架二手客机。希望能飞到目的地。',
-      },
-      {
-        text: '[老司机] 开大巴走',
-        type: 'TALENT',
-        talentReq: 'T01', 
-        effect: (s) => ({ risk: Math.max(0, s.risk - 10), sanity: s.sanity + 10, time: s.time - 3 }),
-        resultText: '重操旧业！你亲自驾驶大巴车穿越丛林，不仅省钱，还赢得了吃瓜群众的欢呼。',
-      }
-    ]
-  },
-  // --- 热点事件：火星人约架 ---
-  {
-    id: 'EVENT_ELON',
-    title: '火星人的挑战',
-    description: '那个造火箭的科技狂人“M先生”在 404 平台上发了一张你骑驴的P图，并向你发起“角斗场格斗挑战”。',
-    tags: ['DIGITAL', 'SOCIAL', 'SCAM'],
-    choices: [
-      {
-        text: '接受挑战！',
-        type: 'AGGRESSIVE',
-        effect: (s) => ({ risk: s.risk + 25, sanity: s.sanity + 15, time: s.time - 1 }),
-        resultText: '你回复：“地点随你挑！”虽然你根本没打算去，但这波流量赢麻了。',
-      },
-      {
-        text: '全网封杀',
+        text: '原地休息',
         type: 'SAFE',
-        effect: (s) => ({ sanity: Math.min(100, s.sanity + 10), risk: Math.max(0, s.risk - 5), time: s.time - 1 }),
-        resultText: '眼不见为净。你下令全岛封锁该平台。世界清静了。',
+        healthCost: -2, // 回血
+        sanityCost: 2,
+        effect: (s) => ({ time: s.time - 1, health: s.health + 2, sanity: s.sanity - 2 }),
+        resultText: '你闭目养神了一会儿。体力恢复了些许，但焦虑感加重了。',
       },
       {
-        text: '[资源] 收购平台',
-        type: 'TALENT',
-        talentReq: 'T02',
-        effect: (s) => ({ money: s.money - 1000000, risk: s.risk + 30, time: s.time - 2 }),
-        resultText: '你出价收购 404 平台。虽然资金被冻结了没买成，但M先生被你的“钞能力”吓了一跳。',
+        text: '翻看旧照片',
+        type: 'NORMAL',
+        effect: (s) => ({ time: s.time - 1, sanity: s.sanity + 5 }),
+        resultText: '你看着以前阅兵的照片，那是你逝去的青春。',
       }
     ]
   },
-  // --- 热点事件：大停电 ---
+
+  // ================= ACT 1: 起源 (The Beginning) =================
   {
-    id: 'EVENT_BLACKOUT',
-    title: '全岛大停电',
-    description: '整个首府陷入一片漆黑。反对者说是基建老化，你的幕僚说是北方大国发动的“电磁战”。',
-    tags: ['DARK', 'CITY', 'MYSTERY'],
+    id: 'E100_START',
+    title: '最后72小时',
+    description: '警报拉响，总统府乱作一团。办公桌上只有三样东西能带走，这决定了你的逃亡路线。',
+    tags: ['CITY', 'DANGER'],
+    priority: 100,
+    condition: (s) => s.time === 72,
     choices: [
       {
-        text: '是蜥蜴人干的',
-        type: 'NORMAL',
-        effect: (s) => ({ sanity: s.sanity - 10, risk: s.risk + 5, time: s.time - 1 }),
-        resultText: '你再次声称是“经过基因改造的蜥蜴”咬断了电缆。大家看你的眼神像看傻子。',
-      },
-      {
-        text: '趁黑转移',
-        type: 'STEALTH',
-        effect: (s) => ({ risk: Math.max(0, s.risk - 20), time: s.time - 2 }),
-        resultText: '没有监控，没有路灯。这是逃跑的完美时机。',
-      },
-      {
-        text: '[小鸟] 召唤雷电',
-        type: 'TALENT',
-        talentReq: 'T06',
-        effect: (s) => ({ sanity: 100, time: s.time - 1 }),
-        resultText: '你对着天空祈祷。居然真的打雷了！虽然电没来，但粉丝们把你当成了神。',
-      }
-    ]
-  },
-  // --- 热点事件：通货膨胀 ---
-  {
-    id: 'EVENT_INFLATION',
-    title: '天价卷饼',
-    description: '你饿了，想买个路边摊的卷饼。老板说：“不要岛币，只要美元或者黄金。”',
-    tags: ['FOOD', 'CITY', 'RESOURCE'],
-    choices: [
-      {
-        text: '付一车钞票',
-        type: 'NORMAL',
-        moneyReq: 10000, // 这里的钱其实贬值了
-        effect: (s) => ({ money: s.money - 50000, time: s.time - 0.5 }), // 实际扣更多
-        resultText: '你用推车推了一吨纸币给老板。老板勉强收下了，说只能买半个。',
-      },
-      {
-        text: '直接征用',
+        text: '防弹奔驰车钥匙',
         type: 'AGGRESSIVE',
-        effect: (s) => ({ risk: s.risk + 10, sanity: s.sanity + 10, time: s.time - 0.5 }),
-        resultText: '“这是为了岛屿的未来！”你吃得很香，但周围的围观群众握紧了拳头。',
+        setRoute: 'A',
+        effect: (s) => ({ time: s.time - 1, risk: 20 }),
+        resultText: '你选择了【Route A: 贫民窟之王】。目标：利用民意和黑帮，在混乱中隐身。',
       },
       {
-        text: '[资源] 拿油换饼',
-        type: 'TALENT',
-        talentReq: 'T02',
-        effect: (s) => ({ money: s.money + 5000, time: s.time - 0.5 }), // 反而回本一点
-        resultText: '你倒了一桶原油给老板。在黑市上，这可是硬通货。',
+        text: '旧军靴和砍刀',
+        type: 'STEALTH',
+        healthCost: 5,
+        setRoute: 'B',
+        effect: (s) => ({ time: s.time - 1, health: s.health - 5 }),
+        resultText: '你选择了【Route B: 丛林法则】。目标：穿越达里恩地堑，活得像个野兽。',
+      },
+      {
+        text: '核手提箱',
+        type: 'SPECIAL',
+        sanityCost: 10,
+        setRoute: 'C',
+        effect: (s) => ({ time: s.time - 1, sanity: s.sanity - 10 }),
+        resultText: '你选择了【Route C: 地堡暴君】。目标：死守地下掩体，等待不存在的援军。',
       }
     ]
   },
-  // --- 链式事件：悬赏令 ---
+
+  // ================= GLOBAL: 全局通用 (The World Against You) =================
   {
-    id: 'CHAIN_WANTED_01',
-    title: '千万悬赏',
-    description: '北方大国刚刚宣布：悬赏 1500 万抓捕你！你的保镖看你的眼神开始变得奇怪了。',
-    tags: ['DANGER', 'HUMAN', 'CITY'],
-    condition: (s) => !s.flags['bodyguard_check'],
+    id: 'G01_MUSK',
+    title: '马斯克的嘲讽',
+    description: '埃隆·马斯克在X上发了一张你被PS成小丑的表情包，配文“DOGE coin is more stable than his regime”（狗狗币都比他的政权稳）。',
+    tags: ['DIGITAL', 'SOCIAL'],
     choices: [
       {
-        text: '给保镖涨工资 ($20w)',
+        text: '对喷',
+        type: 'AGGRESSIVE',
+        effect: (s) => ({ risk: s.risk + 10, fans: s.fans + 50000, time: s.time - 1 }),
+        resultText: '你回了一句脏话。虽然暴露了IP，但你的粉丝数暴涨。黑红也是红。',
+      },
+      {
+        text: '默默拉黑',
         type: 'SAFE',
-        moneyReq: 200000,
-        setFlag: 'bodyguard_check',
-        effect: (s) => ({ money: s.money - 200000, risk: Math.max(0, s.risk - 10), time: s.time - 1 }),
-        resultText: '有钱能使鬼推磨。保镖发誓效忠于你（只要美元还值钱）。',
-      },
-      {
-        text: '先下手为强',
-        type: 'AGGRESSIVE',
-        setFlag: 'bodyguard_check',
-        effect: (s) => ({ risk: s.risk + 10, sanity: s.sanity - 10, time: s.time - 1 }),
-        resultText: '你解雇了所有人，换成了你老家的亲戚。虽然不专业，但至少不贪钱。',
-      },
-      {
-        text: '反向悬赏金发老头',
-        type: 'TALENT',
-        talentReq: 'T07', // 嘴炮王者
-        effect: (s) => ({ risk: s.risk + 30, sanity: s.sanity + 20, time: s.time - 1 }),
-        resultText: '你宣布悬赏 20 头骆驼抓捕北方大统领。国际社会笑疯了，但你的铁粉很嗨。',
+        sanityCost: 5,
+        effect: (s) => ({ sanity: s.sanity - 5, time: s.time - 0.5 }),
+        resultText: '你关掉了屏幕。这一刻，你感到了前所未有的孤独。',
       }
     ]
   },
-  // --- 事件：丛林密道 ---
   {
-    id: 'EVENT_JUNGLE',
-    title: '边境密道',
-    description: '通往邻国的边境被封锁了，只有一条以前帮派留下的丛林密道。',
-    tags: ['SURVIVAL', 'NATURE', 'STEALTH'],
+    id: 'G02_DEEPFAKE',
+    title: 'AI 换脸诈骗',
+    description: '你在TikTok上刷到了“自己”的直播。AI生成的你在镜头前哭着推销“流亡者”牌洗发水。居然有三万人下单。',
+    tags: ['DIGITAL', 'SCAM'],
     choices: [
       {
-        text: '钻过去',
+        text: '这也行？我也卖！',
+        type: 'NORMAL',
+        sanityCost: 5,
+        effect: (s) => ({ money: s.money + 50000, risk: s.risk + 15, sanity: s.sanity - 5 }),
+        resultText: '你加入了带货行列。真假美猴王同时在线，观众直呼过瘾。',
+      },
+      {
+        text: '感到存在主义危机',
+        type: 'SAFE',
+        sanityCost: 10,
+        effect: (s) => ({ sanity: s.sanity - 10, risk: Math.max(0, s.risk - 5) }),
+        resultText: '如果是AI在替我坐牢就好了。你陷入了沉思。',
+      }
+    ]
+  },
+  {
+    id: 'G03_KFC',
+    title: '疯狂星期四',
+    description: '今天是周四。路边垃圾桶上的广告单写着：“V我50，助你复国”。你曾是这个国家的特许经营权拥有者。',
+    tags: ['FOOD', 'CITY'],
+    choices: [
+      {
+        text: '想吃，买不起',
+        type: 'NORMAL',
+        healthCost: 5,
+        sanityCost: 5,
+        effect: (s) => ({ sanity: s.sanity - 5, health: s.health - 5 }),
+        resultText: '你连个蛋挞都买不起。饥饿感让你更加清醒地认识到了阶级跌落。',
+      },
+      {
+        text: '[铁胃] 翻垃圾桶',
+        type: 'TALENT',
+        talentReq: 'T01',
+        effect: (s) => ({ health: s.health + 10, sanity: s.sanity + 5 }),
+        resultText: '你找到半个全家桶。虽然凉了，但这是你三天来吃得最好的一顿。',
+      }
+    ]
+  },
+  {
+    id: 'G05_STARLINK',
+    title: '星链过境',
+    description: '抬头看夜空，一串星链卫星像幽灵火车一样划过。你知道它们正在扫描地面的热源信号。',
+    tags: ['SKY', 'DANGER'],
+    choices: [
+      {
+        text: '泼灭篝火',
         type: 'STEALTH',
-        effect: (s) => ({ time: s.time - 5, sanity: s.sanity - 15, risk: Math.max(0, s.risk - 20) }),
-        resultText: '全是蚊子和泥巴！你弄丢了一只鞋，但成功绕过了无人机。',
+        healthCost: 5,
+        effect: (s) => ({ health: s.health - 5, risk: Math.max(0, s.risk - 10) }),
+        resultText: '寒冷刺骨，但至少你从热成像上消失了。',
       },
       {
-        text: '[舞王] 灵活走位',
-        type: 'TALENT',
-        talentReq: 'T05',
-        effect: (s) => ({ time: s.time - 3, sanity: s.sanity + 5 }),
-        resultText: '你像跳舞一样避开了地雷和沼泽。甚至还和一只美洲豹合了影。',
-      },
-      {
-        text: '我不走，我要空调',
-        type: 'NORMAL',
-        effect: (s) => ({ time: s.time - 1, risk: s.risk + 10 }),
-        resultText: '你在边境的小屋吹空调。卫星很快就拍到了你的热成像。',
+        text: '竖中指',
+        type: 'AGGRESSIVE',
+        effect: (s) => ({ sanity: s.sanity + 5, risk: s.risk + 5 }),
+        resultText: '虽然卫星看不见，但你心里爽多了。',
       }
     ]
   },
-  // --- 事件：黑客攻击 ---
+
+  // ================= ROUTE A: 贫民窟之王 (Barrio) =================
   {
-    id: 'EVENT_CYBER',
-    title: '岛民投票系统',
-    description: '反对者黑入了系统，屏幕上的支持率数字正在疯狂跳动。如果结果出来是你输了，守卫队可能会倒戈。',
-    tags: ['DIGITAL', 'CITY', 'DANGER'],
+    id: 'A02_CAR_MOD',
+    title: '非法改装',
+    description: '贫民窟的机械师要把你的防弹奔驰拆了卖废铁。你不得不答应让他把车顶的机枪改成烤肉架，以此换取保护。',
+    tags: ['MECH', 'CITY'],
+    route: 'A',
     choices: [
       {
-        text: '拔网线！',
-        type: 'AGGRESSIVE',
-        effect: (s) => ({ risk: s.risk + 20, sanity: s.sanity + 10, time: s.time - 1 }),
-        resultText: '物理断网是最安全的。现在你宣布获得了 108% 的支持率。',
-      },
-      {
-        text: '请东方专家 ($10w)',
+        text: '同意改装',
         type: 'NORMAL',
-        moneyReq: 100000,
-        effect: (s) => ({ money: s.money - 100000, risk: Math.max(0, s.risk - 10), time: s.time - 2 }),
-        resultText: '专家来了，喝了两瓶伏特加，敲了几下键盘。数据显示你大获全胜。',
+        effect: (s) => ({ money: s.money + 20000, risk: Math.max(0, s.risk - 10) }),
+        resultText: '这辆曾经象征权力的车，现在变成了全城最火的流动烧烤摊。',
       },
       {
-        text: '[神秘签证] 呼叫大哥',
-        type: 'TALENT',
-        talentReq: 'T04',
-        effect: (s) => ({ risk: 0, sanity: 100, time: s.time - 1 }),
-        resultText: '大哥发话了。没人敢动你。系统瞬间恢复“正常”。',
+        text: '我是总统！',
+        type: 'AGGRESSIVE',
+        healthCost: 20,
+        effect: (s) => ({ health: s.health - 20, risk: s.risk + 20 }),
+        resultText: '机械师给了你一扳手。“这里只有废铁，没有总统。”',
       }
     ]
   },
-    // --- 事件：黑衣特工 ---
   {
-    id: 'EVENT_CIA',
-    title: '卖热狗的特工',
-    description: '那个卖热狗的小贩看起来太壮了，而且他的耳机线漏出来了。绝对是黑衣人特工。',
-    tags: ['HUMAN', 'DANGER', 'CITY'],
+    id: 'A03_YOUTUBER',
+    title: '网红打卡点',
+    description: '几个不怕死的欧美 YouTuber 溜进贫民窟做直播，标题是“寻找传说中的大胡子”。',
+    tags: ['DIGITAL', 'DANGER'],
+    route: 'A',
     choices: [
       {
-        text: '买个热狗吃',
+        text: '躲进下水道',
+        type: 'STEALTH',
+        healthCost: 5,
+        sanityCost: 10,
+        effect: (s) => ({ health: s.health - 5, sanity: s.sanity - 10, risk: Math.max(0, s.risk - 10) }),
+        resultText: '你和老鼠大眼瞪小眼。外面传来主播兴奋的声音：“家人们，刷游艇我进去看看！”',
+      },
+      {
+        text: '收费合影',
         type: 'NORMAL',
-        effect: (s) => ({ sanity: s.sanity - 20, time: s.time - 0.5 }),
-        resultText: '味道不错，就是有点像泻药。你在厕所蹲了半小时。',
-      },
-      {
-        text: '当场抓捕',
-        type: 'AGGRESSIVE',
-        effect: (s) => ({ risk: s.risk + 20, money: s.money + 50000, time: s.time - 1 }),
-        resultText: '搜出了护照和武器！你把他当成了谈判筹码，勒索了对方一笔钱。',
-      },
-      {
-        text: '[舞王] 邀请跳舞',
-        type: 'TALENT',
-        talentReq: 'T05',
-        effect: (s) => ({ risk: Math.max(0, s.risk - 10), sanity: s.sanity + 20 }),
-        resultText: '特工懵了。他被迫和你跳了一支舞，甚至忘记了拔枪。尴尬化解了。',
+        effect: (s) => ({ money: s.money + 5000, risk: s.risk + 30, fans: s.fans + 10000 }),
+        resultText: '你戴上墨镜收了5000刀。直播间炸了，CIA的定位也锁定了这里。',
       }
     ]
-  }
+  },
+  {
+    id: 'A04_GANG',
+    title: '帮派谈判',
+    description: '当地帮派老大“疯狗”找到了你。他表示如果你能把他列入未来的“特赦名单”，他就帮你搞定今晚的巡逻队。',
+    tags: ['HUMAN', 'DANGER'],
+    route: 'A',
+    choices: [
+      {
+        text: '成交',
+        type: 'AGGRESSIVE',
+        effect: (s) => ({ fans: s.fans - 5000, risk: Math.max(0, s.risk - 20), karma: s.karma - 20 }),
+        resultText: '你出卖了正义（虽然你也没多少），换来了今晚的平安。',
+      },
+      {
+        text: '拒绝',
+        type: 'NORMAL',
+        healthCost: 20,
+        effect: (s) => ({ health: s.health - 20, sanity: s.sanity + 10 }),
+        resultText: '你被打了一顿，但守住了底线。虽然底线不能当饭吃。',
+      }
+    ]
+  },
+
+  // ================= ROUTE B: 丛林法则 (Jungle) =================
+  {
+    id: 'B01_COYOTE',
+    title: '蛇头的涨价',
+    description: '带路的蛇头把烟头弹在地上：“现在你是VIP客户，得加钱。你的人头比毒品值钱多了。”',
+    tags: ['HUMAN', 'MONEY'],
+    route: 'B',
+    choices: [
+      {
+        text: '支付加价 ($50w)',
+        type: 'NORMAL',
+        moneyReq: 500000,
+        effect: (s) => ({ money: s.money - 500000, time: s.time - 1 }),
+        resultText: '你支付了这笔巨款。这也是一种通货膨胀。',
+      },
+      {
+        text: '[特种兵] 物理讲价',
+        type: 'TALENT',
+        talentReq: 'T10',
+        effect: (s) => ({ money: s.money + 10000, risk: s.risk - 5 }),
+        resultText: '你夺过他的枪，不仅免了单，还反向打劫了他身上的现金。',
+      }
+    ]
+  },
+  {
+    id: 'B02_MUD',
+    title: '达里恩的泥沼',
+    description: '你陷进了齐腰深的泥沼。如果以前，会有十个保镖趴在地上给你当桥。现在，你只能抓住一根看起来像毒蛇的树枝。',
+    tags: ['SURVIVAL', 'NATURE'],
+    route: 'B',
+    choices: [
+      {
+        text: '挣扎爬出',
+        type: 'NORMAL',
+        healthCost: 15,
+        effect: (s) => ({ health: s.health - 15, time: s.time - 2 }),
+        resultText: '你像只泥猴一样爬了出来。你的一只意大利定制皮鞋永远留在了那里。',
+      },
+      {
+        text: '呼叫随行难民',
+        type: 'SOCIAL',
+        moneyReq: 5000,
+        effect: (s) => ({ money: s.money - 5000, fans: s.fans - 100 }),
+        resultText: '你花钱雇人把你拉了出来。他们看你的眼神充满了鄙视。',
+      }
+    ]
+  },
+  {
+    id: 'B04_FOOD',
+    title: '丛林野味',
+    description: '干粮吃完了。你抓到一只色彩斑斓的青蛙。根据贝爷的节目，这玩意儿去掉头应该能吃。',
+    tags: ['FOOD', 'NATURE'],
+    route: 'B',
+    choices: [
+      {
+        text: '生吃',
+        type: 'NORMAL',
+        healthCost: 20,
+        sanityCost: 10,
+        effect: (s) => ({ health: s.health - 20, sanity: s.sanity - 10 }),
+        resultText: '你吃下去了，然后开始呕吐。你的视野变成了紫色，看见了过世的奶奶。',
+      },
+      {
+        text: '[铁胃] 嘎嘣脆',
+        type: 'TALENT',
+        talentReq: 'T01',
+        healthCost: -10,
+        effect: (s) => ({ health: s.health + 10, sanity: s.sanity + 5 }),
+        resultText: '鸡肉味，嘎嘣脆。蛋白质是牛肉的五倍。',
+      }
+    ]
+  },
+
+  // ================= ROUTE C: 地堡暴君 (Bunker) =================
+  {
+    id: 'C02_PIZZA',
+    title: '最后的披萨',
+    description: '你试图点外卖送到秘密基地门口。外卖小哥接单了，但他同时也把坐标卖给了CIA。',
+    tags: ['FOOD', 'DANGER'],
+    route: 'C',
+    choices: [
+      {
+        text: '出去拿外卖',
+        type: 'AGGRESSIVE',
+        healthCost: -10,
+        effect: (s) => ({ risk: s.risk + 30, health: s.health + 10 }),
+        resultText: '你拿到了披萨，五分钟后，战斧导弹的外卖也到了。基地防御受损。',
+      },
+      {
+        text: '取消订单',
+        type: 'SAFE',
+        healthCost: 5,
+        sanityCost: 10,
+        effect: (s) => ({ sanity: s.sanity - 10, health: s.health - 5 }),
+        resultText: '你饿着肚子听着肚子叫。这是最安全的饿肚子。',
+      }
+    ]
+  },
+  {
+    id: 'C04_LOYALTY',
+    title: '将军的加薪要求',
+    description: '卫队队长进来敬了个礼，说兄弟们士气低落，要求用美元结算工资，而且要现结。',
+    tags: ['MONEY', 'HUMAN'],
+    route: 'C',
+    choices: [
+      {
+        text: '给钱 ($50w)',
+        type: 'NORMAL',
+        moneyReq: 500000,
+        effect: (s) => ({ money: s.money - 500000, risk: Math.max(0, s.risk - 10) }),
+        resultText: '有钱能使鬼推磨。他敬礼的姿势标准多了。',
+      },
+      {
+        text: '谈理想',
+        type: 'AGGRESSIVE',
+        healthCost: 20,
+        effect: (s) => ({ risk: s.risk + 20, health: s.health - 20 }),
+        resultText: '“理想不能当饭吃。”他朝天花板开了一枪。你吓得尿了裤子。',
+      }
+    ]
+  },
+
+  // ================= LOW SANITY (理智 < 30) =================
+  {
+    id: 'S02_MIRROR',
+    title: '镜子里的陌生人',
+    description: '你照镜子，镜子里的人没有胡子，穿着橙色囚服，正在纽约的监狱里吃三明治。',
+    tags: ['DARK'],
+    condition: (s) => s.sanity < 30,
+    priority: 80,
+    repeatable: true,
+    choices: [
+      {
+        text: '砸碎镜子',
+        type: 'AGGRESSIVE',
+        healthCost: 5,
+        effect: (s) => ({ health: s.health - 5, sanity: s.sanity + 5 }),
+        resultText: '手被划破了，但那个囚犯消失了。',
+      },
+      {
+        text: '问他好不好吃',
+        type: 'NORMAL',
+        sanityCost: 10,
+        effect: (s) => ({ sanity: s.sanity - 10 }),
+        resultText: '他笑了笑，递给你半个三明治。你伸手去拿，撞到了玻璃。',
+      }
+    ]
+  },
 ];
 
-// --- 结局 (ENDINGS) ---
+// --- 结局 (ENDINGS) - V2.0 ---
 export const ENDINGS: Ending[] = [
+  // 失败结局
+  {
+    id: 'E_DEAD',
+    title: '历史的尘埃',
+    description: '你倒在了泥泞里。没有葬礼，没有国旗。只有路透社的一条简讯：“突发：前总统被确认身亡。”两分钟后，这条新闻被一条“猫咪跳舞”的视频顶下去了。',
+    condition: (s) => s.health <= 0
+  },
   {
     id: 'E_EXTRADITION',
-    title: '穿上橙色囚服',
-    description: '还是没跑掉。你在北方的联邦监狱里醒来，隔壁住着几个大毒枭。金发老头在404平台上说：“抓到了！Huge success！”',
+    title: '引渡专机',
+    description: '你被戴上了头套。你闻到了熟悉的航空燃油味。空姐甜美的声音响起：“欢迎乘坐美联航，本次航班直飞纽约南区法院。”',
     condition: (s) => s.risk >= 100
   },
   {
-    id: 'E_COUP',
-    title: '直升机上的推落',
-    description: '你的手下背叛了你。理智归零的你，在最后一刻还在对着空气发表演讲。',
+    id: 'E_INSANE',
+    title: '疯人院演讲',
+    description: '理智归零。你坐在路边对着空气发表演讲。警察甚至没给你戴手铐，只是温柔地给你披上了毛毯，送你去了该去的地方。',
     condition: (s) => s.sanity <= 0
   },
   {
     id: 'E_BROKE',
-    title: '街头卖艺',
-    description: '岛屿破产了，你也破产了。你在邻国街头卖玉米饼，甚至没钱买回家的车票。',
+    title: '街头乞丐',
+    description: '没钱了。昔日的独裁者，如今在哥伦比亚街头卖玉米饼。路人纷纷投来同情的硬币，你居然觉得比当总统轻松。',
     condition: (s) => s.money < 0
   },
+
+  // 成功结局
   {
-    id: 'E_RUSSIA',
-    title: '雪国郊外的晚上',
-    description: '在最后时刻，一架神秘的运输机接走了你。你在东方雪国的别墅里度过余生，虽然冷，但很安全。',
-    condition: (s) => s.time <= 0 && s.risk < 80 && s.money > 1000000
+    id: 'E_SUNRISE',
+    title: '海岛日出',
+    description: '小船靠岸了。这个岛在地图上不存在。你拿出仅剩的金条扔给船夫。太阳升起，你不再是总统，你是岛主。你活下来了。',
+    condition: (s) => s.time <= 0 && s.route === 'B'
   },
   {
-    id: 'E_WIN',
-    title: '永远的岛主',
-    description: '72小时过去了，他们还是没能抓到你。你在阳台上挥手，底下的岛民高呼万岁。哪怕只是暂时的胜利。',
+    id: 'E_URBAN_LEGEND',
+    title: '都市传说',
+    description: '没人见过他。有人说他在贫民窟当了教父，有人说他整容成了韩流明星。警方翻遍了全城，连一根胡子都没找到。',
+    condition: (s) => s.time <= 0 && s.route === 'A'
+  },
+  {
+    id: 'E_BUNKER_KING',
+    title: '地底之王',
+    description: '72小时过去了，他们没能攻破你的大门。你坐在堆满罐头的王座上，虽然只有老鼠是你的臣民，但你依然是王。',
+    condition: (s) => s.time <= 0 && s.route === 'C'
+  },
+  {
+    id: 'E_SURVIVE',
+    title: '侥幸逃脱',
+    description: '虽然很狼狈，鞋子跑丢了，私房钱也没了，但你熬过了最后的72小时。自由的空气真甜美。',
     condition: (s) => s.time <= 0
   }
 ];
